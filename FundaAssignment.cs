@@ -25,24 +25,28 @@ namespace FundaAssignment
         public FormFundaAssignment()
         {
             InitializeComponent();
-            dataGridViewMostObjects.Columns.Add("Makelaar", "MAKELAAR");
-            dataGridViewMostObjects.Columns.Add("Objects", "OBJECTS");
-            dataGridViewMostObjectsWithTuin.Columns.Add("Makelaar", "MAKELAAR");
-            dataGridViewMostObjectsWithTuin.Columns.Add("Objects", "OBJECTS");
+            addColumnHeadersToDataGridView(dataGridViewMostObjects);
+            addColumnHeadersToDataGridView(dataGridViewMostObjectsWithTuin);
+        }
+
+        private void addColumnHeadersToDataGridView(DataGridView dataGridView)
+        {
+            dataGridView.Columns.Add("Makelaar", "MAKELAAR");
+            dataGridView.Columns.Add("Objects", "OBJECTS");
         }
 
         private void buttonPopulateMostObjects_Click(object sender, EventArgs e)
         {
             populateGridWithTopMakelaars(
                 dataGridViewMostObjects, 
-                getApiRequest("/amsterdam/sorteer-makelaar-op/"));
+                generateApiRequest("/amsterdam/sorteer-makelaar-op/"));
         }
 
         private void buttonPopulateMostObjectsWithTuin_Click(object sender, EventArgs e)
         {
             populateGridWithTopMakelaars(
                 dataGridViewMostObjectsWithTuin, 
-                getApiRequest("/amsterdam/tuin/sorteer-makelaar-op/"));
+                generateApiRequest("/amsterdam/tuin/sorteer-makelaar-op/"));
         }
 
         private void populateGridWithTopMakelaars (DataGridView dataGridView, string apiRequest)
@@ -80,7 +84,7 @@ namespace FundaAssignment
                 dataGridView.Rows.Add(sortedFundaObjects[i].Key, sortedFundaObjects[i].Value);
         }
 
-        private string getApiRequest (string zoekOpdracht)
+        private string generateApiRequest (string zoekOpdracht)
         {
             return BASEURL + KEY + "/?type=" + TYPE + "&zo=" + zoekOpdracht + "&page=1&pagesize=" + PAGE_SIZE;
         }
