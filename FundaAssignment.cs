@@ -25,6 +25,10 @@ namespace FundaAssignment
         public FormFundaAssignment()
         {
             InitializeComponent();
+            dataGridViewMostObjects.Columns.Add("Makelaar", "MAKELAAR");
+            dataGridViewMostObjects.Columns.Add("Objects", "OBJECTS");
+            dataGridViewMostObjectsWithTuin.Columns.Add("Makelaar", "MAKELAAR");
+            dataGridViewMostObjectsWithTuin.Columns.Add("Objects", "OBJECTS");
         }
 
         private void buttonPopulateMostObjects_Click(object sender, EventArgs e)
@@ -43,6 +47,8 @@ namespace FundaAssignment
 
         private void populateGridWithTopMakelaars (DataGridView dataGridView, string apiRequest)
         {
+            dataGridView.Rows.Clear();
+
             Dictionary<string, int> fundaObjects = new Dictionary<string, int>();
             WebClient c = new WebClient();
             var data = c.DownloadString(apiRequest);
@@ -68,8 +74,6 @@ namespace FundaAssignment
                     System.Threading.Thread.Sleep(10);
             }
 
-            dataGridView.Columns.Add("Makelaar", "MAKELAAR");
-            dataGridView.Columns.Add("Objects", "OBJECTS");
             List<KeyValuePair<string, int>> sortedFundaObjects =
                 (from item in fundaObjects orderby item.Value descending select item).ToList();
             for (int i = 0; i < Math.Min(MAX_MAKELAAR, sortedFundaObjects.Count); i++)
