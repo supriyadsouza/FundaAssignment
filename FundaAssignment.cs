@@ -4,13 +4,12 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Net;
+
 using System.Text;
-using System.Text.RegularExpressions;
+
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+
 
 namespace FundaAssignment
 {
@@ -20,7 +19,7 @@ namespace FundaAssignment
         private static string KEY = "005e7c1d6f6c4f9bacac16760286e3cd";
         private static string TYPE = "koop";
         private static int PAGE_SIZE = 25;
-        private static int MAX_MAKELAAR = 10;
+        private static int MAX_MAKELAARS = 10;
 
         public FormFundaAssignment()
         {
@@ -39,54 +38,31 @@ namespace FundaAssignment
         {
             populateGridWithTopMakelaars(
                 dataGridViewMostObjects, 
-                generateApiRequest("/amsterdam/sorteer-makelaar-op/"));
+                generateApiRequestString("/amsterdam/sorteer-makelaar-op/"));
         }
 
         private void buttonPopulateMostObjectsWithTuin_Click(object sender, EventArgs e)
         {
             populateGridWithTopMakelaars(
                 dataGridViewMostObjectsWithTuin, 
-                generateApiRequest("/amsterdam/tuin/sorteer-makelaar-op/"));
+                generateApiRequestString("/amsterdam/tuin/sorteer-makelaar-op/"));
         }
 
-        private void populateGridWithTopMakelaars (DataGridView dataGridView, string apiRequest)
+        private string generateApiRequestString(string zoekOpdracht)
+        {
+            return BASEURL + KEY + "/?type=" + TYPE + "&zo=" + zoekOpdracht + "&page=1&pagesize=" + PAGE_SIZE;
+        }
+
+        private void populateGridWithTopMakelaars (DataGridView dataGridView, string apiRequestString)
         {
             dataGridView.Rows.Clear();
 
-            Dictionary<string, int> fundaObjects = new Dictionary<string, int>();
-            WebClient c = new WebClient();
-            var data = c.DownloadString(apiRequest);
-            JObject o = JObject.Parse(data);
-            decimal totalApiRequests = Int32.Parse(o["Paging"]["AantalPaginas"].ToString());
-            System.Threading.Thread.Sleep(10);
-
-            for (int apiRequestNum = 1; apiRequestNum <= totalApiRequests; apiRequestNum++)
-            {
-                apiRequest = Regex.Replace(apiRequest, "&page=.*&", "&page=" + apiRequestNum + "&");
-                data = c.DownloadString(apiRequest);
-                o = JObject.Parse(data);
-                for (int objectIndex = 0; objectIndex < o["Objects"].Count(); objectIndex++)
-                {
-                    string makelaar = o["Objects"][objectIndex]["MakelaarNaam"].ToString();
-                    if (fundaObjects.ContainsKey(makelaar))
-                        fundaObjects[makelaar]++;
-                    else
-                        fundaObjects.Add(makelaar, 1);
-                }
-
-                if (apiRequestNum % 100 == 0)
-                    System.Threading.Thread.Sleep(10);
-            }
-
-            List<KeyValuePair<string, int>> sortedFundaObjects =
-                (from item in fundaObjects orderby item.Value descending select item).ToList();
-            for (int i = 0; i < Math.Min(MAX_MAKELAAR, sortedFundaObjects.Count); i++)
-                dataGridView.Rows.Add(sortedFundaObjects[i].Key, sortedFundaObjects[i].Value);
-        }
-
-        private string generateApiRequest (string zoekOpdracht)
-        {
-            return BASEURL + KEY + "/?type=" + TYPE + "&zo=" + zoekOpdracht + "&page=1&pagesize=" + PAGE_SIZE;
+            Dictionary<string, int> dict_MakelaarObjects = 
+                ReadFundaJson.generateDict_MakelaarObjects(apiRequestString);
+            List<KeyValuePair<string, int>> sortedList_MakelaarObjects = 
+                (from item in dict_MakelaarObjects orderby item.Value descending select item).ToList();
+            for (int i = 0; i < Math.Min(MAX_MAKELAARS, sortedList_MakelaarObjects.Count); i++)
+                dataGridView.Rows.Add(sortedList_MakelaarObjects[i].Key, sortedList_MakelaarObjects[i].Value);
         }
     }
 }
